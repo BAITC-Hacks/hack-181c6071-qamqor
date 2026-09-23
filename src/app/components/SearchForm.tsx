@@ -270,6 +270,7 @@ function SearchResults({ response }: { response: MatchResponse }) {
         </div>
         {response.elapsedMs !== undefined && <span>{response.elapsedMs} мс</span>}
       </div>
+      <p className={styles.resultsNote}>{response.message}</p>
 
       <div className={styles.cards}>
         {matches.map((match) => (

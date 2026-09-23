@@ -10,7 +10,7 @@ export default function ContractorCard({ match }: { match: ContractorMatch }) {
         <span>{contractor.city}</span>
       </div>
       <h3>{contractor.name}</h3>
-      <p className={styles.price}>{formatMoney(contractor.priceFromKzt)}</p>
+      <p className={styles.price}>от {formatMoney(contractor.priceFromKzt)}</p>
       <p className={styles.explanation}>{match.explanation}</p>
       {(contractor.synthetic || contractor.cityImputed || contractor.priceImputed) && (
         <div className={styles.badges} aria-label="Особенности данных">

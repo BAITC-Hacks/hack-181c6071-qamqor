@@ -220,6 +220,12 @@
   margin-bottom: 22px;
 }
 
+.resultsNote {
+  margin: -10px 0 22px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .resultsHeading > span {
   color: var(--muted);
   font-size: 0.78rem;
