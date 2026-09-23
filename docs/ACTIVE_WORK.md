@@ -13,7 +13,7 @@
 | AI-1 | LLM-агент объясняет результаты matcher с безопасным fallback | Димаш | `feat/ai-data` | DONE | production `ai` PASS: 3 результата, стабильный порядок, 3443 мс |
 | UI-AI-1 | Показать режим AI/fallback в результатах | Даурен | `feat/ui` | MERGED | `cae823e`; check/build/mobile 390×844 PASS; AI e2e после AI-1 |
 | README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | ACTIVE | архитектура, AI/fallback, тесты, demo requests, production URL |
-| PROD-QA-1 | Проверить production по четырём обязательным сценариям и mobile | Даурен | `feat/ui` | ACTIVE | только отчёт; код не менять |
+| PROD-QA-1 | Проверить production по четырём обязательным сценариям и mobile | Даурен | `feat/ui` | ACTIVE | менять только `docs/PRODUCTION_QA.md`; код приложения не трогать |
 | SUBMIT-1 | Проверить чистоту репо, секреты, ссылку и требования отправки | Али | `main` | ACTIVE | после README-1 и PROD-QA-1 |
 
 Статусы: `TODO`, `ACTIVE`, `REVIEW`, `DONE`, `MERGED`, `BLOCKED`.
