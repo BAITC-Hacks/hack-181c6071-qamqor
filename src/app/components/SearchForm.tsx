@@ -45,13 +45,39 @@ const CATEGORIES = [
 ];
 const LANGUAGES = ["английский", "казахский", "русский"];
 
-export default function SearchForm() {
+type FeaturedProfile = {
+  id: string;
+  name: string;
+  category: string;
+  city: string;
+  priceFromKzt: number;
+  priceImputed: boolean;
+};
+
+export default function SearchForm({
+  featured,
+  catalogStats,
+}: {
+  featured: FeaturedProfile[];
+  catalogStats: { profiles: number; categories: number; cities: number };
+}) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [state, setState] = useState<SearchState>({ status: "idle" });
   const [lastRequest, setLastRequest] = useState<MatchRequest | null>(null);
 
   const setField = (field: keyof typeof INITIAL_FORM, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const chooseProfile = (profile: FeaturedProfile) => {
+    setForm((current) => ({ ...current, city: profile.city, category: profile.category }));
+    document.getElementById("search-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const chooseExample = (city: string, category: string, date: string) => {
+    setForm({ ...INITIAL_FORM, city, category, date, eventFormat: "корпоратив", budgetKzt: "1500000" });
+    setState({ status: "idle" });
+    document.getElementById("search-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const search = async (request: MatchRequest) => {
@@ -71,6 +97,7 @@ export default function SearchForm() {
 
       const data = (await response.json()) as MatchResponseWithMode;
       setState({ status: "success", data });
+      requestAnimationFrame(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (error) {
       setState({
         status: "error",
@@ -101,16 +128,64 @@ export default function SearchForm() {
 
   return (
     <main className={styles.page}>
+      <nav className={styles.navigation} aria-label="Главная навигация">
+        <a className={styles.wordmark} href="#top"><span aria-hidden="true">✳</span> Qamqor<span>Match</span></a>
+        <div className={styles.navLinks}>
+          <a href="#catalog">Каталог</a>
+          <a className={styles.navAction} href="#search-form">Подобрать подрядчика <span aria-hidden="true">↗</span></a>
+        </div>
+      </nav>
+
       <section className={styles.hero} aria-labelledby="search-title">
-        <p className={styles.eyebrow}>Qamqor Match</p>
-        <h1 id="search-title">Найдём подрядчика для вашего события</h1>
+        <div className={styles.heroCopy} id="top">
+        <p className={styles.eyebrow}>Подбор для событий · Казахстан</p>
+        <h1 id="search-title">Нужные люди<br /><em>для вашего события.</em></h1>
         <p className={styles.lead}>
-          Укажите основные параметры — мы покажем до трёх доступных вариантов и
-          объясним каждый выбор.
+          Найдите подрядчика по городу, дате и бюджету. Покажем до трёх подходящих вариантов,
+          объясним выбор и поможем оценить расходы.
         </p>
+        <a className={styles.heroAction} href="#search-form">Начать подбор <span aria-hidden="true">↗</span></a>
+        </div>
+        <div className={styles.heroAside} aria-label="О каталоге">
+          <p className={styles.asideEyebrow}>Официальный набор данных кейса</p>
+          <strong>{catalogStats.profiles}</strong><span>профилей подрядчиков</span>
+          <div className={styles.asideDivider} />
+          <p>{catalogStats.categories} категорий · {catalogStats.cities} локации</p>
+          <small>Занятость и соответствие условиям проверяем при поиске</small>
+        </div>
       </section>
 
-      <form className={styles.form} onSubmit={submit}>
+      <section className={styles.catalog} id="catalog" aria-labelledby="catalog-title">
+        <div className={styles.sectionHeading}>
+          <div><p className={styles.eyebrow}>Знакомство с каталогом</p><h2 id="catalog-title">Исполнители для вашего плана</h2></div>
+          <p>Реальные записи из датасета. Выберите направление — мы подставим город и категорию в поиск.</p>
+        </div>
+        <div className={styles.featuredGrid}>
+          {featured.map((profile, index) => (
+            <article className={styles.featuredCard} key={profile.id}>
+              <div className={styles.featuredArt} data-tone={index} aria-hidden="true">
+                <span>{profile.category.slice(0, 1)}</span><span className={styles.artIndex}>0{index + 1}</span>
+              </div>
+              <div className={styles.featuredContent}>
+                <div className={styles.featuredMeta}><span>{profile.category}</span><span>{profile.city}</span></div>
+                <h3>{profile.name}</h3>
+                <p>от {new Intl.NumberFormat("ru-KZ").format(profile.priceFromKzt)} ₸{profile.priceImputed ? " · ориентир" : ""}</p>
+                <button type="button" onClick={() => chooseProfile(profile)}>Проверить на мою дату <span aria-hidden="true">↗</span></button>
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className={styles.catalogNote}>Примеры профилей не означают свободную дату. Итоговая стоимость согласуется с исполнителем.</p>
+      </section>
+
+      <section className={styles.searchSection} aria-labelledby="form-title">
+      <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Точный подбор</p><h2 id="form-title">Расскажите о событии</h2></div><p>Пять основных параметров. Язык и длительность помогут уточнить выбор.</p></div>
+      <div className={styles.examples} aria-label="Готовые примеры поиска">
+        <span>Попробовать пример</span>
+        <button type="button" onClick={() => chooseExample("Астана", "Ведущий", "2026-11-14")}>Ведущий · Астана <span aria-hidden="true">↗</span></button>
+        <button type="button" onClick={() => chooseExample("Алматы", "Флорист", "2026-11-15")}>Флорист · Алматы <span aria-hidden="true">↗</span></button>
+      </div>
+      <form className={styles.form} id="search-form" onSubmit={submit}>
         <div className={styles.formGrid}>
           <label>
             Город
@@ -203,8 +278,9 @@ export default function SearchForm() {
           {state.status === "loading" ? "Ищем подходящих…" : "Найти подрядчиков"}
         </button>
       </form>
+      </section>
 
-      <section className={styles.results} aria-live="polite" aria-busy={state.status === "loading"}>
+      <section className={styles.results} id="results" aria-live="polite" aria-busy={state.status === "loading"}>
         {state.status === "idle" && (
           <div className={styles.emptyState}>
             <span aria-hidden="true">✦</span>
