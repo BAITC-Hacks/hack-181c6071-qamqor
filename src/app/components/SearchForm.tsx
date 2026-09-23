@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import ContractorCard from "./ContractorCard";
@@ -69,9 +69,11 @@ const money = (amount: number) => `${new Intl.NumberFormat("ru-KZ").format(amoun
 
 export default function SearchForm({
   featured,
+  catalogCategories,
   catalogStats,
 }: {
   featured: FeaturedProfile[];
+  catalogCategories: { name: string; count: number }[];
   catalogStats: { profiles: number; categories: number; cities: number };
 }) {
   const [form, setForm] = useState(INITIAL_FORM);
@@ -79,6 +81,7 @@ export default function SearchForm({
   const [lastRequest, setLastRequest] = useState<MatchRequest | null>(null);
   const [plan, setPlan] = useState<PlanItem[]>([]);
   const [eventBudget, setEventBudget] = useState("");
+  const requestVersion = useRef(0);
   const planTotal = plan.reduce((sum, item) => sum + item.priceFromKzt, 0);
 
   const addToPlan = (match: ContractorMatch, request: MatchRequest) => {
@@ -104,21 +107,34 @@ export default function SearchForm({
   };
 
   const setField = (field: keyof typeof INITIAL_FORM, value: string) => {
+    requestVersion.current += 1;
     setForm((current) => ({ ...current, [field]: value }));
+    setState({ status: "idle" });
   };
 
   const chooseProfile = (profile: FeaturedProfile) => {
+    requestVersion.current += 1;
     setForm((current) => ({ ...current, city: profile.city, category: profile.category }));
+    setState({ status: "idle" });
+    document.getElementById("search-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const chooseCategory = (category: string) => {
+    requestVersion.current += 1;
+    setForm((current) => ({ ...current, category }));
+    setState({ status: "idle" });
     document.getElementById("search-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const chooseExample = (city: string, category: string, date: string) => {
+    requestVersion.current += 1;
     setForm({ ...INITIAL_FORM, city, category, date, eventFormat: "корпоратив", budgetKzt: "1500000" });
     setState({ status: "idle" });
     document.getElementById("search-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const search = async (request: MatchRequest) => {
+    const version = ++requestVersion.current;
     setLastRequest(request);
     setState({ status: "loading" });
 
@@ -134,9 +150,11 @@ export default function SearchForm({
       }
 
       const data = (await response.json()) as MatchResponseWithMode;
+      if (version !== requestVersion.current) return;
       setState({ status: "success", data });
       requestAnimationFrame(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (error) {
+      if (version !== requestVersion.current) return;
       setState({
         status: "error",
         message:
@@ -213,6 +231,16 @@ export default function SearchForm({
               </div>
             </article>
           ))}
+        </div>
+        <div className={styles.categoryBrowse}>
+          <h3>Все направления</h3>
+          <div className={styles.categoryChips}>
+            {catalogCategories.map(({ name, count }) => (
+              <button type="button" key={name} onClick={() => chooseCategory(name)}>
+                {name} <span>{count}</span>
+              </button>
+            ))}
+          </div>
         </div>
         <p className={styles.catalogNote}>Примеры профилей не означают свободную дату. Итоговая стоимость согласуется с исполнителем.</p>
       </section>

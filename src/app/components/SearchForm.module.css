@@ -301,6 +301,12 @@
 .featuredContent p { margin: 0; font-weight: 750; }
 .featuredContent button { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 22px; border: 0; border-top: 1px solid var(--line); padding: 18px 0 0; color: var(--brand-dark); background: transparent; font: inherit; font-size: 0.88rem; font-weight: 800; text-align: left; cursor: pointer; }
 .featuredContent button:hover { color: var(--ink); }
+.categoryBrowse { margin-top: 34px; }
+.categoryBrowse h3 { margin: 0 0 16px; font-size: 1.18rem; letter-spacing: -0.025em; }
+.categoryChips { display: flex; flex-wrap: wrap; gap: 9px; }
+.categoryChips button { display: inline-flex; align-items: center; gap: 10px; border: 1px solid #d3ded2; border-radius: 999px; padding: 9px 12px; color: var(--ink); background: white; font: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.categoryChips button:hover { border-color: var(--brand); background: #edf4eb; }
+.categoryChips button span { color: var(--brand); font-size: 0.74rem; font-weight: 850; }
 .catalogNote { margin: 14px 0 0; color: var(--muted); font-size: 0.78rem; }
 .searchSection { padding-top: 44px; border-top: 1px solid #dce1d9; }
 .form { scroll-margin-top: 20px; }
