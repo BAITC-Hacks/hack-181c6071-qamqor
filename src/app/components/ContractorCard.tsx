@@ -1,30 +1,21 @@
 import styles from "./SearchForm.module.css";
-
-export type ContractorMatch = {
-  id: string;
-  name: string;
-  category: string;
-  city: string;
-  priceKzt: number;
-  explanation: string;
-  synthetic?: boolean;
-  imputed?: boolean;
-};
+import type { ContractorMatch } from "@/lib/types";
 
 export default function ContractorCard({ match }: { match: ContractorMatch }) {
+  const { contractor } = match;
   return (
     <article className={styles.card}>
       <div className={styles.cardTopline}>
-        <span>{match.category}</span>
-        <span>{match.city}</span>
+        <span>{contractor.categories.join(", ")}</span>
+        <span>{contractor.city}</span>
       </div>
-      <h3>{match.name}</h3>
-      <p className={styles.price}>{formatMoney(match.priceKzt)}</p>
+      <h3>{contractor.name}</h3>
+      <p className={styles.price}>{formatMoney(contractor.priceFromKzt)}</p>
       <p className={styles.explanation}>{match.explanation}</p>
-      {(match.synthetic || match.imputed) && (
+      {(contractor.synthetic || contractor.cityImputed || contractor.priceImputed) && (
         <div className={styles.badges} aria-label="Особенности данных">
-          {match.synthetic && <span>Синтетический профиль</span>}
-          {match.imputed && <span>Часть данных восстановлена</span>}
+          {contractor.synthetic && <span>Синтетический профиль</span>}
+          {(contractor.cityImputed || contractor.priceImputed) && <span>Часть данных восстановлена</span>}
         </div>
       )}
     </article>

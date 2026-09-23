@@ -3,25 +3,9 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-import ContractorCard, { type ContractorMatch } from "./ContractorCard";
+import ContractorCard from "./ContractorCard";
+import type { MatchRequest, MatchResponse } from "@/lib/types";
 import styles from "./SearchForm.module.css";
-
-type MatchRequest = {
-  city: string;
-  date: string;
-  eventFormat: string;
-  category: string;
-  budgetKzt: number;
-  durationHours?: number;
-  language?: string;
-};
-
-type MatchResponse = {
-  outcome: "MATCHES_FOUND" | "NO_CATEGORY_IN_CITY" | "NO_ELIGIBLE";
-  matches: ContractorMatch[];
-  rejectionSummary?: Record<string, number> | null;
-  elapsedMs?: number;
-};
 
 type SearchState =
   | { status: "idle" }
@@ -42,7 +26,7 @@ const INITIAL_FORM = {
 const REJECTION_LABELS: Record<string, string> = {
   busy: "заняты на выбранную дату",
   budget: "выше указанного бюджета",
-  eventFormat: "не работают с таким форматом",
+  format: "не работают с таким форматом",
   language: "не поддерживают выбранный язык",
   duration: "не подходят по длительности",
 };
@@ -160,7 +144,7 @@ export default function SearchForm() {
             Бюджет, ₸
             <input
               inputMode="numeric"
-              min="1"
+              min="1000"
               onChange={(event) => setField("budgetKzt", event.target.value)}
               placeholder="1 200 000"
               required
@@ -289,7 +273,7 @@ function SearchResults({ response }: { response: MatchResponse }) {
 
       <div className={styles.cards}>
         {matches.map((match) => (
-          <ContractorCard key={match.id} match={match} />
+          <ContractorCard key={match.contractor.id} match={match} />
         ))}
       </div>
     </div>
