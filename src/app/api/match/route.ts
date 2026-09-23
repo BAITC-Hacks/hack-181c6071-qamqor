@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { loadContractors } from "@/lib/csv";
 import { matchContractors } from "@/lib/matcher";
+import { improveExplanations } from "@/lib/ai-explanations.server";
 import type { MatchRequest } from "@/lib/types";
 
 function validate(input: Partial<MatchRequest>): string | null {
@@ -25,7 +26,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
     const contractors = await loadContractors();
-    const result = matchContractors(contractors, input as MatchRequest);
+    const matched = matchContractors(contractors, input as MatchRequest);
+    const result = await improveExplanations(matched, input as MatchRequest);
     return NextResponse.json({ ...result, elapsedMs: Math.round(performance.now() - startedAt) });
   } catch {
     return NextResponse.json({ error: "Не удалось обработать запрос." }, { status: 500 });
