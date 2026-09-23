@@ -95,7 +95,7 @@ npm run dev
 OPENAI_API_KEY=
 ```
 
-Это пустой пример. Настоящий ключ нельзя добавлять в Git, README, клиентский код или логи. `.env.local` исключён из Git. AI-слой читает ключ только из `process.env.OPENAI_API_KEY`; параметры `OPENAI_MODEL` и `MOCK_LLM`, встречающиеся в старом `.env.example`, текущим AI-слоем не используются.
+Это пустой пример. Настоящий ключ нельзя добавлять в Git, README, клиентский код или логи. `.env.local` исключён из Git. AI-слой читает ключ только из `process.env.OPENAI_API_KEY`.
 
 ## Production-проверки
 

@@ -12,9 +12,9 @@
 | DEPLOY-1 | Vercel deployment | Али | `feat/core` | DONE | https://qamqor-hackathon.vercel.app; production API проверен |
 | AI-1 | LLM-агент объясняет результаты matcher с безопасным fallback | Димаш | `feat/ai-data` | DONE | production `ai` PASS: 3 результата, стабильный порядок, 3443 мс |
 | UI-AI-1 | Показать режим AI/fallback в результатах | Даурен | `feat/ui` | MERGED | `cae823e`; check/build/mobile 390×844 PASS; AI e2e после AI-1 |
-| README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | ACTIVE | архитектура, AI/fallback, тесты, demo requests, production URL |
-| PROD-QA-1 | Проверить production по четырём обязательным сценариям и mobile | Даурен | `feat/ui` | ACTIVE | менять только `docs/PRODUCTION_QA.md`; код приложения не трогать |
-| SUBMIT-1 | Проверить чистоту репо, секреты, ссылку и требования отправки | Али | `main` | ACTIVE | после README-1 и PROD-QA-1 |
+| README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | MERGED | `7c72485`; check/build и 28/28 тестов PASS |
+| PROD-QA-1 | Проверить production по четырём обязательным сценариям и mobile | Даурен | `feat/ui` | DONE | `0727d76`; найденный fallback исправлен, повторный production QA PASS |
+| SUBMIT-1 | Проверить чистоту репо, секреты, ссылку и требования отправки | Али | `main` | DONE | чистый clone: npm ci/check/build/28 tests PASS; секретов нет |
 
 Статусы: `TODO`, `ACTIVE`, `REVIEW`, `DONE`, `MERGED`, `BLOCKED`.
 
