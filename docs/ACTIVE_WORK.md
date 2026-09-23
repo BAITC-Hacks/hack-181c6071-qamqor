@@ -11,6 +11,7 @@
 | DATA-1 | Demo fixtures: плотная, редкая, пустая категория и две даты | Димаш | `feat/ai-data` | MERGED | `247b5e1`; 6/6 тестов PASS на объединённом `main` |
 | DEPLOY-1 | Vercel deployment | Али | `feat/core` | DONE | https://qamqor-hackathon.vercel.app; production API проверен |
 | AI-1 | LLM-агент объясняет результаты matcher с безопасным fallback | Димаш | `feat/ai-data` | ACTIVE | matcher и порядок не менять; ключ только в env; таймаут и fallback обязательны |
+| UI-AI-1 | Показать режим AI/fallback в результатах | Даурен | `feat/ui` | ACTIVE | только `SearchForm.tsx` и CSS; backend, matcher и API не менять |
 | README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | BLOCKED | продолжить после AI-1 |
 
 Статусы: `TODO`, `ACTIVE`, `REVIEW`, `DONE`, `MERGED`, `BLOCKED`.
