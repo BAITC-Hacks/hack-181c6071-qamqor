@@ -3,8 +3,8 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-import type { MatchRequest, MatchResponse } from "@/lib/types";
 import ContractorCard from "./ContractorCard";
+import type { MatchRequest, MatchResponse } from "@/lib/types";
 import styles from "./SearchForm.module.css";
 
 type SearchState =
@@ -26,7 +26,7 @@ const INITIAL_FORM = {
 const REJECTION_LABELS: Record<string, string> = {
   busy: "заняты на выбранную дату",
   budget: "выше указанного бюджета",
-  eventFormat: "не работают с таким форматом",
+  format: "не работают с таким форматом",
   language: "не поддерживают выбранный язык",
   duration: "не подходят по длительности",
 };

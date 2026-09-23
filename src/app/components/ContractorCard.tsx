@@ -1,10 +1,8 @@
-import type { ContractorMatch } from "@/lib/types";
 import styles from "./SearchForm.module.css";
+import type { ContractorMatch } from "@/lib/types";
 
 export default function ContractorCard({ match }: { match: ContractorMatch }) {
   const { contractor } = match;
-  const imputed = contractor.cityImputed || contractor.priceImputed;
-
   return (
     <article className={styles.card}>
       <div className={styles.cardTopline}>
@@ -14,10 +12,10 @@ export default function ContractorCard({ match }: { match: ContractorMatch }) {
       <h3>{contractor.name}</h3>
       <p className={styles.price}>от {formatMoney(contractor.priceFromKzt)}</p>
       <p className={styles.explanation}>{match.explanation}</p>
-      {(contractor.synthetic || imputed) && (
+      {(contractor.synthetic || contractor.cityImputed || contractor.priceImputed) && (
         <div className={styles.badges} aria-label="Особенности данных">
           {contractor.synthetic && <span>Синтетический профиль</span>}
-          {imputed && <span>Часть данных восстановлена</span>}
+          {(contractor.cityImputed || contractor.priceImputed) && <span>Часть данных восстановлена</span>}
         </div>
       )}
     </article>
