@@ -1,0 +1,62 @@
+{
+  "dense": {
+    "request": {
+      "city": "Астана",
+      "date": "2026-11-14",
+      "eventFormat": "корпоратив",
+      "category": "Ведущий",
+      "budgetKzt": 1500000
+    },
+    "expected": {
+      "outcome": "MATCHED",
+      "categoryCount": 5,
+      "ids": ["HK-37181", "HK-80581", "HK-97041"],
+      "rejectionSummary": { "busy": 1, "budget": 0, "format": 1, "language": 0, "duration": 0 }
+    }
+  },
+  "rare": {
+    "request": {
+      "city": "Алматы",
+      "date": "2026-11-15",
+      "eventFormat": "корпоратив",
+      "category": "Флорист",
+      "budgetKzt": 1500000
+    },
+    "expected": {
+      "outcome": "MATCHED",
+      "categoryCount": 2,
+      "ids": ["HK-39372"],
+      "rejectionSummary": { "busy": 1, "budget": 0, "format": 0, "language": 0, "duration": 0 }
+    }
+  },
+  "empty": {
+    "request": {
+      "city": "Алматы",
+      "date": "2026-11-14",
+      "eventFormat": "корпоратив",
+      "category": "Флорист",
+      "budgetKzt": 1500000
+    },
+    "expected": {
+      "outcome": "NO_ELIGIBLE",
+      "categoryCount": 2,
+      "ids": [],
+      "rejectionSummary": { "busy": 1, "budget": 0, "format": 1, "language": 0, "duration": 0 }
+    }
+  },
+  "otherDate": {
+    "request": {
+      "city": "Астана",
+      "date": "2026-11-15",
+      "eventFormat": "корпоратив",
+      "category": "Ведущий",
+      "budgetKzt": 1500000
+    },
+    "expected": {
+      "outcome": "MATCHED",
+      "categoryCount": 5,
+      "ids": ["HK-58385", "HK-37181", "HK-97041"],
+      "rejectionSummary": { "busy": 1, "budget": 0, "format": 1, "language": 0, "duration": 0 }
+    }
+  }
+}
