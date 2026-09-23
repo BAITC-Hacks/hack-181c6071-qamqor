@@ -11,7 +11,7 @@ type Plan = {
   budget: "remaining" | "within";
 };
 
-export const AI_TIMEOUT_MS = 3500;
+export const AI_TIMEOUT_MS = 6000;
 const MAX_RESPONSE_BYTES = 32_768;
 const instructions = `Ты редактор объяснений подбора подрядчиков. Отбор и порядок уже
 рассчитаны кодом и не подлежат изменению. Для каждого переданного id выбери план
@@ -113,6 +113,14 @@ export async function improveExplanations(
       }, AI_TIMEOUT_MS);
     });
     const operation = async (): Promise<ExplainedMatchResult> => {
+      const allowedFocuses: Plan["focus"][] = ["format"];
+      if (request.language && fallback.matches.every(({ facts }) => facts.language === request.language)) {
+        allowedFocuses.push("language");
+      }
+      if (request.durationHours && fallback.matches.every(({ facts }) =>
+        facts.maxHours !== undefined && facts.maxHours >= request.durationHours!)) {
+        allowedFocuses.push("duration");
+      }
       // Explicit allowlists: no full profiles, descriptions, names, scores, env or extra request keys.
       const input = {
         request: {
@@ -146,7 +154,7 @@ export async function improveExplanations(
                   required: ["id", "focus", "wording", "budget"],
                   properties: {
                     id: { type: "string", enum: fallback.matches.map(({ contractor }) => contractor.id) },
-                    focus: { type: "string", enum: ["format", "language", "duration"] },
+                    focus: { type: "string", enum: allowedFocuses },
                     wording: { type: "string", enum: ["direct", "fit"] },
                     budget: { type: "string", enum: ["remaining", "within"] },
                   },
