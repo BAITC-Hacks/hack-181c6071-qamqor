@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 
 import ContractorCard from "./ContractorCard";
-import type { MatchRequest, MatchResponse } from "@/lib/types";
+import type { ContractorMatch, MatchRequest, MatchResponse } from "@/lib/types";
 import styles from "./SearchForm.module.css";
 
 type MatchResponseWithMode = MatchResponse & {
@@ -54,6 +54,19 @@ type FeaturedProfile = {
   priceImputed: boolean;
 };
 
+type PlanItem = {
+  id: string;
+  name: string;
+  category: string;
+  city: string;
+  date: string;
+  eventFormat: string;
+  priceFromKzt: number;
+  priceImputed: boolean;
+};
+
+const money = (amount: number) => `${new Intl.NumberFormat("ru-KZ").format(amount)} ₸`;
+
 export default function SearchForm({
   featured,
   catalogStats,
@@ -64,6 +77,31 @@ export default function SearchForm({
   const [form, setForm] = useState(INITIAL_FORM);
   const [state, setState] = useState<SearchState>({ status: "idle" });
   const [lastRequest, setLastRequest] = useState<MatchRequest | null>(null);
+  const [plan, setPlan] = useState<PlanItem[]>([]);
+  const [eventBudget, setEventBudget] = useState("");
+  const planTotal = plan.reduce((sum, item) => sum + item.priceFromKzt, 0);
+
+  const addToPlan = (match: ContractorMatch, request: MatchRequest) => {
+    const { contractor } = match;
+    if (plan.length > 0 && (
+      plan[0].city.toLocaleLowerCase("ru") !== request.city.trim().toLocaleLowerCase("ru") ||
+      plan[0].date !== request.date ||
+      plan[0].eventFormat.toLocaleLowerCase("ru") !== request.eventFormat.trim().toLocaleLowerCase("ru")
+    )) setEventBudget("");
+    setPlan((current) => {
+      const sameEvent = current.length === 0 || (
+        current[0].city.toLocaleLowerCase("ru") === request.city.trim().toLocaleLowerCase("ru") &&
+        current[0].date === request.date &&
+        current[0].eventFormat.toLocaleLowerCase("ru") === request.eventFormat.trim().toLocaleLowerCase("ru")
+      );
+      const preserved = sameEvent ? current.filter((item) => item.category !== request.category) : [];
+      return [...preserved, {
+        id: contractor.id, name: contractor.name, category: request.category,
+        city: contractor.city, date: request.date, eventFormat: request.eventFormat,
+        priceFromKzt: contractor.priceFromKzt, priceImputed: contractor.priceImputed,
+      }];
+    });
+  };
 
   const setField = (field: keyof typeof INITIAL_FORM, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -132,6 +170,7 @@ export default function SearchForm({
         <a className={styles.wordmark} href="#top"><span aria-hidden="true">✳</span> Qamqor<span>Match</span></a>
         <div className={styles.navLinks}>
           <a href="#catalog">Каталог</a>
+          <a href="#event-plan">Смета{plan.length > 0 ? ` · ${plan.length}` : ""}</a>
           <a className={styles.navAction} href="#search-form">Подобрать подрядчика <span aria-hidden="true">↗</span></a>
         </div>
       </nav>
@@ -306,7 +345,49 @@ export default function SearchForm({
           </div>
         )}
 
-        {state.status === "success" && <SearchResults response={state.data} />}
+        {state.status === "success" && <SearchResults
+          response={state.data}
+          request={lastRequest}
+          plan={plan}
+          onAdd={addToPlan}
+        />}
+      </section>
+
+      <section className={styles.planSection} id="event-plan" aria-labelledby="plan-title">
+        <div className={styles.sectionHeading}>
+          <div><p className={styles.eyebrow}>План расходов</p><h2 id="plan-title">Смета события</h2></div>
+          <p>Соберите по одному подрядчику на категорию и сравните сумму стартовых цен с общим бюджетом.</p>
+        </div>
+        <div className={styles.planPanel}>
+          {plan.length === 0 ? (
+            <div className={styles.planEmpty}><strong>Пока ничего не выбрано</strong><p>Начните с поиска и добавьте подходящего подрядчика из результатов.</p><a href="#search-form">Перейти к подбору ↗</a></div>
+          ) : (
+            <>
+              <p className={styles.planContext}>Событие: {plan[0].city} · {plan[0].date} · {plan[0].eventFormat}</p>
+              <div className={styles.planList}>
+                {plan.map((item) => (
+                  <div className={styles.planRow} key={item.category}>
+                    <div><span>{item.category} · {item.city}</span><strong>{item.name}</strong>{item.priceImputed && <small>Цена восстановлена из данных</small>}</div>
+                    <strong>от {money(item.priceFromKzt)}</strong>
+                    <button type="button" aria-label={`Убрать ${item.name} из сметы`} onClick={() => setPlan((current) => current.filter((entry) => entry.category !== item.category))}>×</button>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.planTotal}><span>Сумма стартовых цен</span><strong>от {money(planTotal)}</strong></div>
+              <label className={styles.eventBudget}>Общий бюджет события, ₸ <span>необязательно</span>
+                <input type="number" inputMode="numeric" min="1" step="1000" value={eventBudget} onChange={(event) => setEventBudget(event.target.value)} placeholder="Например, 3 000 000" />
+              </label>
+              {Number(eventBudget) > 0 && (
+                <p className={styles.planBalance} role="status">
+                  {Number(eventBudget) >= planTotal
+                    ? `Ориентировочный остаток: ${money(Number(eventBudget) - planTotal)}`
+                    : `Стартовые цены выше общего бюджета на ${money(planTotal - Number(eventBudget))}`}
+                </p>
+              )}
+            </>
+          )}
+          <p className={styles.planCaveat}>В смете одно событие: при смене города, даты или формата новая запись начинает новую смету. Расчёт действует только в открытой вкладке. Цены указаны «от», не являются офертой и не учитывают дополнительные услуги.</p>
+        </div>
       </section>
     </main>
   );
@@ -324,7 +405,14 @@ function LoadingState() {
   );
 }
 
-function SearchResults({ response }: { response: MatchResponseWithMode }) {
+function SearchResults({
+  response, request, plan, onAdd,
+}: {
+  response: MatchResponseWithMode;
+  request: MatchRequest | null;
+  plan: PlanItem[];
+  onAdd: (match: ContractorMatch, request: MatchRequest) => void;
+}) {
   if (response.outcome === "NO_CATEGORY_IN_CITY") {
     return (
       <div className={styles.messageState}>
@@ -394,7 +482,13 @@ function SearchResults({ response }: { response: MatchResponseWithMode }) {
 
       <div className={styles.cards}>
         {matches.map((match) => (
-          <ContractorCard key={match.contractor.id} match={match} />
+          <ContractorCard
+            key={match.contractor.id}
+            match={match}
+            inPlan={plan.some((item) => item.category === request?.category && item.id === match.contractor.id && item.date === request?.date && item.city === request?.city && item.eventFormat === request?.eventFormat)}
+            newEvent={plan.length > 0 && (plan[0].date !== request?.date || plan[0].city.toLocaleLowerCase("ru") !== request?.city.trim().toLocaleLowerCase("ru") || plan[0].eventFormat.toLocaleLowerCase("ru") !== request?.eventFormat.trim().toLocaleLowerCase("ru"))}
+            onAdd={() => { if (request) onAdd(match, request); }}
+          />
         ))}
       </div>
     </div>

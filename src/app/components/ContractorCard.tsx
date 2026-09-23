@@ -1,7 +1,17 @@
 import styles from "./SearchForm.module.css";
 import type { ContractorMatch } from "@/lib/types";
 
-export default function ContractorCard({ match }: { match: ContractorMatch }) {
+export default function ContractorCard({
+  match,
+  inPlan,
+  newEvent,
+  onAdd,
+}: {
+  match: ContractorMatch;
+  inPlan: boolean;
+  newEvent: boolean;
+  onAdd: () => void;
+}) {
   const { contractor, facts } = match;
   const budgetKzt = contractor.priceFromKzt + facts.withinBudgetByKzt;
   const budgetShare = budgetKzt > 0
@@ -35,6 +45,9 @@ export default function ContractorCard({ match }: { match: ContractorMatch }) {
           {(contractor.cityImputed || contractor.priceImputed) && <span>Часть данных восстановлена</span>}
         </div>
       )}
+      <button className={styles.addToPlan} type="button" onClick={onAdd} disabled={inPlan}>
+        {inPlan ? "В смете события" : newEvent ? "Начать новую смету" : "Добавить в смету"} <span aria-hidden="true">{inPlan ? "✓" : "+"}</span>
+      </button>
     </article>
   );
 }
