@@ -15,6 +15,8 @@
 | README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | MERGED | `7c72485`; check/build и 28/28 тестов PASS |
 | PROD-QA-1 | Проверить production по четырём обязательным сценариям и mobile | Даурен | `feat/ui` | DONE | `0727d76`; найденный fallback исправлен, повторный production QA PASS |
 | SUBMIT-1 | Проверить чистоту репо, секреты, ссылку и требования отправки | Али | `main` | DONE | чистый clone: npm ci/check/build/28 tests PASS; секретов нет |
+| EXPLAIN-2 | Добавить в объяснения подтверждённые признаки из анкет | Али | `main` | DONE | отдельные признаки для dense/rare; 28/28 тестов, check/build PASS |
+| BUDGET-1 | Показать сметный ориентир для каждого варианта | Али | `main` | DONE | стартовая цена, лимит, остаток; без изменения matcher |
 
 Статусы: `TODO`, `ACTIVE`, `REVIEW`, `DONE`, `MERGED`, `BLOCKED`.
 

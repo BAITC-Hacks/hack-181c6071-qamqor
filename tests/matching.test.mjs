@@ -50,11 +50,18 @@ test("official CSV loads 66 distinct profiles and valid busy dates", () => {
 test("dense category returns exactly three contractors in the expected order", () => {
   const result = verifyScenario(scenarios.dense);
   assert.equal(result.matches.length, 3);
+  const details = result.matches.map(({ facts, explanation }) => {
+    assert.ok(facts.profileDetail);
+    assert.ok(explanation.includes(facts.profileDetail));
+    return facts.profileDetail;
+  });
+  assert.equal(new Set(details).size, 3);
 });
 
 test("rare category returns one contractor and a truthful count/rejection message", () => {
   const result = verifyScenario(scenarios.rare);
   assert.equal(result.matches.length, 1);
+  assert.equal(result.matches[0].facts.profileDetail, "в анкете описано авторское цветочное оформление");
   assert.match(result.message, /Нашлось только 1/);
   assert.match(result.message, /остальные кандидаты не прошли условия/);
   assert.equal(result.matches.length + result.rejectionSummary.busy, 2);

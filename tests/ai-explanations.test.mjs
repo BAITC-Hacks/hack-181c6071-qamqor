@@ -63,7 +63,7 @@ test("valid AI plan changes only explanations, even when provider reverses IDs",
     assert.ok(!options.body.includes("unit-test-placeholder"));
     assert.deepEqual(Object.keys(input.matches[0]).sort(), ["facts", "id"]);
     assert.deepEqual(Object.keys(input.matches[0].facts).sort(), [
-      "availableOnRequestedDate", "eventFormat", "maxHours", "priceFromKzt", "withinBudgetByKzt",
+      "availableOnRequestedDate", "eventFormat", "maxHours", "priceFromKzt", "profileDetail", "withinBudgetByKzt",
     ]);
     return Response.json(envelope(plans().reverse()));
   });
@@ -78,6 +78,7 @@ test("valid AI plan changes only explanations, even when provider reverses IDs",
     assert.ok(match.explanation.startsWith("Подходит для формата"));
     assert.ok(match.explanation.includes(match.contractor.priceFromKzt.toLocaleString("ru-RU")));
     assert.ok(match.explanation.includes(match.facts.withinBudgetByKzt.toLocaleString("ru-RU")));
+    if (match.facts.profileDetail) assert.ok(match.explanation.includes(match.facts.profileDetail));
     assert.equal(match.explanation.split(". ").length, 2);
   }
 });

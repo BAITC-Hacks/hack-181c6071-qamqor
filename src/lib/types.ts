@@ -30,6 +30,7 @@ export type MatchFacts = {
   language?: string;
   maxHours?: number;
   evidence?: string;
+  profileDetail?: string;
 };
 
 export type ContractorMatch = {

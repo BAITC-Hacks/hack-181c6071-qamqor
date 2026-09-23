@@ -20,6 +20,26 @@ function descriptionEvidence(contractor: Contractor, request: MatchRequest) {
   return words.find((word) => requested.includes(normalize(word)));
 }
 
+function profileDetail(description: string): string | undefined {
+  const experience = description.match(/(более\s+)?(\d{1,2})\s+лет(?!\p{L})/iu);
+  if (experience) {
+    return `в анкете указан опыт ${experience[1] ? "более " : ""}${experience[2]} лет`;
+  }
+  if (/авторск\p{L}*\s+цветочн\p{L}*\s+оформлен/iu.test(description)) {
+    return "в анкете описано авторское цветочное оформление";
+  }
+  if (/импровизац/iu.test(description)) {
+    return "в анкете упомянута импровизация";
+  }
+  if (/интерактив/iu.test(description)) {
+    return "в анкете упомянуты интерактивы";
+  }
+  if (/вокал/iu.test(description)) {
+    return "в анкете указан вокал";
+  }
+  return undefined;
+}
+
 function score(contractor: Contractor, request: MatchRequest, facts: MatchFacts) {
   const budgetRatio = Math.max(0, facts.withinBudgetByKzt / request.budgetKzt);
   const budgetScore = Math.min(30, Math.round(budgetRatio * 30));
@@ -34,14 +54,12 @@ function score(contractor: Contractor, request: MatchRequest, facts: MatchFacts)
 
 function explain(match: Omit<ContractorMatch, "explanation">) {
   const { contractor, facts } = match;
-  const parts = [
-    `Свободен на выбранную дату и берёт формат «${facts.eventFormat}».`,
-    `Цена от ${contractor.priceFromKzt.toLocaleString("ru-RU")} ₸ — на ${facts.withinBudgetByKzt.toLocaleString("ru-RU")} ₸ ниже бюджета.`,
-  ];
-  if (facts.language) parts.push(`Работает на языке: ${facts.language}.`);
-  if (facts.maxHours) parts.push(`Может работать до ${facts.maxHours} ч.`);
-  if (facts.evidence) parts.push(`В описании найден релевантный признак: «${facts.evidence}».`);
-  return parts.slice(0, 3).join(" ");
+  let fit = `Свободен на выбранную дату и берёт формат «${facts.eventFormat}»`;
+  if (facts.language) fit += `, работает на языке: ${facts.language}`;
+  if (facts.maxHours) fit += `, может работать до ${facts.maxHours} ч`;
+  if (facts.profileDetail) fit += `; ${facts.profileDetail}`;
+  const price = `Цена от ${contractor.priceFromKzt.toLocaleString("ru-RU")} ₸ — на ${facts.withinBudgetByKzt.toLocaleString("ru-RU")} ₸ ниже бюджета`;
+  return `${fit}. ${price}.`;
 }
 
 export function matchContractors(
@@ -87,6 +105,7 @@ export function matchContractors(
       language: request.language,
       maxHours: contractor.maxHours ?? undefined,
       evidence: descriptionEvidence(contractor, request),
+      profileDetail: profileDetail(contractor.description),
     };
     const base = { contractor, facts, score: score(contractor, request, facts) };
     accepted.push({ ...base, explanation: explain(base) });
