@@ -9,9 +9,9 @@
 | BUG-1 | Бюджет 1 500 000 не проходил HTML step validation | Али | `feat/core` | DONE | `f52a9f3`; другим не исправлять |
 | UI-2 | Проверить телефон, три состояния, подпись «цена от» и сообщение результата | Даурен | `feat/ui` | ACTIVE | только UI-файлы; ключ причины остаётся `format` |
 | DATA-1 | Demo fixtures: плотная, редкая, пустая категория и две даты | Димаш | `feat/ai-data` | ACTIVE | `data/fixtures/**`, `tests/**`; engine не менять |
-| DEPLOY-1 | Vercel deployment | Али | `feat/core` | ACTIVE | после текущей интеграции |
+| DEPLOY-1 | Vercel deployment | Али | `feat/core` | DONE | https://qamqor-hackathon.vercel.app; production API проверен |
 | AI-1 | Опциональная LLM-переформулировка фактов | Димаш | `feat/ai-data` | BLOCKED | только после DATA-1 и отдельного назначения |
-| README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | TODO | после deploy URL от Али |
+| README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | ACTIVE | deploy URL добавлен; дополнить demo-сценариями после DATA-1 |
 
 Статусы: `TODO`, `ACTIVE`, `REVIEW`, `DONE`, `MERGED`, `BLOCKED`.
 
