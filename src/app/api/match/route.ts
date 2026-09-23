@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { loadContractors } from "@/lib/csv";
-import { matchContractors } from "@/lib/matcher";
+import { matchContractors, suggestAlternatives } from "@/lib/matcher";
 import { improveExplanations } from "@/lib/ai-explanations.server";
 import type { MatchRequest } from "@/lib/types";
 
@@ -42,8 +42,9 @@ export async function POST(request: Request) {
     const validInput = input as MatchRequest;
     const contractors = await loadContractors();
     const matched = matchContractors(contractors, validInput);
+    const alternatives = matched.matches.length === 0 ? suggestAlternatives(contractors, validInput) : [];
     const result = await improveExplanations(matched, validInput);
-    return NextResponse.json({ ...result, elapsedMs: Math.round(performance.now() - startedAt) });
+    return NextResponse.json({ ...result, alternatives, elapsedMs: Math.round(performance.now() - startedAt) });
   } catch (error) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: "Некорректный JSON." }, { status: 400 });

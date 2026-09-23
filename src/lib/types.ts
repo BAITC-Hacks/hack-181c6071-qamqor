@@ -42,6 +42,13 @@ export type ContractorMatch = {
 
 export type MatchOutcome = "MATCHED" | "NO_CATEGORY_IN_CITY" | "NO_ELIGIBLE";
 
+export type SearchAlternative = {
+  kind: "date" | "budget" | "language" | "duration" | "format" | "city" | "category";
+  label: string;
+  request: MatchRequest;
+  candidateNames: string[];
+};
+
 export type MatchResponse = {
   outcome: MatchOutcome;
   matches: ContractorMatch[];
@@ -49,5 +56,6 @@ export type MatchResponse = {
   message: string;
   algorithmVersion: "v1";
   explanationMode?: "ai" | "fallback";
+  alternatives?: SearchAlternative[];
   elapsedMs: number;
 };

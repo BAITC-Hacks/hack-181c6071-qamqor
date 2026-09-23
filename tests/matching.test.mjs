@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { loadContractors } from "../src/lib/csv.ts";
-import { matchContractors } from "../src/lib/matcher.ts";
+import { matchContractors, suggestAlternatives } from "../src/lib/matcher.ts";
 
 // Exercise the production loader and matcher against the unchanged official CSV.
 const contractors = await loadContractors();
@@ -10,6 +10,36 @@ const scenarios = JSON.parse(await readFile(
   new URL("../data/fixtures/matching-scenarios.json", import.meta.url), "utf8",
 ));
 const ids = (result) => result.matches.map(({ contractor }) => contractor.id);
+
+test("empty search suggests the nearest working date without changing other constraints", () => {
+  const request = scenarios.empty.request;
+  const options = suggestAlternatives(contractors, request);
+  assert.equal(options[0].kind, "date");
+  assert.equal(options[0].request.date, "2026-11-15");
+  assert.deepEqual({ ...options[0].request, date: request.date }, request);
+  assert.deepEqual(options[0].candidateNames, ["Тони Тони Чоппер"]);
+});
+
+test("all suggestions change just one condition and really return eligible contractors", () => {
+  for (const request of [scenarios.empty.request, { ...scenarios.dense.request, budgetKzt: 1000 }, { ...scenarios.dense.request, city: "Караганда" }]) {
+    const options = suggestAlternatives(contractors, request);
+    assert.ok(options.length > 0 && options.length <= 3);
+    assert.deepEqual(suggestAlternatives([...contractors].reverse(), request), options);
+    for (const option of options) {
+      const changes = Object.keys(request).filter((key) => request[key] !== option.request[key]);
+      assert.equal(changes.length, 1);
+      const result = matchContractors(contractors, option.request);
+      assert.equal(result.outcome, "MATCHED");
+      assert.deepEqual(option.candidateNames, result.matches.map(({ contractor }) => contractor.name));
+    }
+  }
+  assert.ok(suggestAlternatives(contractors, { ...scenarios.dense.request, budgetKzt: 1000 }).some((option) => option.kind === "budget"));
+});
+
+test("date suggestions never extrapolate beyond the dataset calendar", () => {
+  const options = suggestAlternatives(contractors, { ...scenarios.empty.request, date: "2027-01-01" });
+  assert.ok(options.every((option) => option.kind !== "date"));
+});
 
 function verifyScenario(scenario) {
   const { request, expected } = scenario;

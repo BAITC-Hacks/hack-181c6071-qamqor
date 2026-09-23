@@ -4,6 +4,7 @@ import type {
   MatchFacts,
   MatchRequest,
   MatchResponse,
+  SearchAlternative,
 } from "./types";
 
 const normalize = (value: string) => value.trim().toLocaleLowerCase("ru-RU");
@@ -133,4 +134,62 @@ export function matchContractors(
       : "Подобраны три наиболее подходящих подрядчика.",
     algorithmVersion: "v1",
   };
+}
+
+// Alternatives are separate requests. Every suggestion changes just one field and
+// passes the same strict matcher; unavailable contractors never enter the result.
+export function suggestAlternatives(contractors: Contractor[], request: MatchRequest): SearchAlternative[] {
+  const alternatives: SearchAlternative[] = [];
+  const base: MatchRequest = {
+    city: request.city, date: request.date, eventFormat: request.eventFormat,
+    category: request.category, budgetKzt: request.budgetKzt,
+    ...(request.language ? { language: request.language } : {}),
+    ...(request.durationHours ? { durationHours: request.durationHours } : {}),
+  };
+  const add = (kind: SearchAlternative["kind"], label: string, changes: Partial<MatchRequest>) => {
+    if (alternatives.length >= 3) return false;
+    const next = { ...base, ...changes };
+    const result = matchContractors(contractors, next);
+    if (!result.matches.length) return false;
+    alternatives.push({ kind, label, request: next, candidateNames: result.matches.map(({ contractor }) => contractor.name) });
+    return true;
+  };
+  const sorted = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "ru"));
+  const inCategory = contractors.filter((item) => normalize(item.city) === normalize(base.city) && includes(item.categories, base.category));
+
+  if (inCategory.length) {
+    // Do not extrapolate date suggestions beyond the last calendar entry in CSV.
+    const calendarEnd = contractors.flatMap((item) => item.busyDates).sort().at(-1);
+    if (calendarEnd && base.date < calendarEnd) {
+      const day = new Date(`${base.date}T00:00:00Z`);
+      for (let offset = 1; offset <= 30 && alternatives.length < 2; offset += 1) {
+        day.setUTCDate(day.getUTCDate() + 1);
+        const date = day.toISOString().slice(0, 10);
+        if (date > calendarEnd) break;
+        const display = date.split("-").reverse().join(".");
+        add("date", `Другая дата: ${display}`, { date });
+      }
+    }
+    const prices = [...new Set(inCategory.map((item) => item.priceFromKzt))]
+      .filter((price) => price > base.budgetKzt).sort((a, b) => a - b);
+    for (const price of prices) {
+      if (add("budget", `Лимит на подрядчика: ${price.toLocaleString("ru-RU")} ₸`, { budgetKzt: price })) break;
+    }
+    if (base.language) add("language", "Без ограничения по языку", { language: undefined });
+    if (base.durationHours) add("duration", "Без ограничения по длительности", { durationHours: undefined });
+    for (const format of sorted(inCategory.flatMap((item) => item.eventFormats))) {
+      if (normalize(format) !== normalize(base.eventFormat)) add("format", `Другой формат: ${format}`, { eventFormat: format });
+      if (alternatives.length >= 3) break;
+    }
+  } else {
+    for (const city of sorted(contractors.filter((item) => includes(item.categories, base.category)).map((item) => item.city))) {
+      add("city", `Другой город: ${city}`, { city });
+      if (alternatives.length >= 3) break;
+    }
+    for (const category of sorted(contractors.filter((item) => normalize(item.city) === normalize(base.city)).flatMap((item) => item.categories))) {
+      add("category", `Другая категория: ${category}`, { category });
+      if (alternatives.length >= 3) break;
+    }
+  }
+  return alternatives;
 }

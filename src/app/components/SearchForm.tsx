@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import ContractorCard from "./ContractorCard";
-import type { ContractorMatch, MatchRequest, MatchResponse } from "@/lib/types";
+import type { ContractorMatch, MatchRequest, MatchResponse, SearchAlternative } from "@/lib/types";
 import styles from "./SearchForm.module.css";
 
 type MatchResponseWithMode = MatchResponse & {
@@ -179,6 +179,16 @@ export default function SearchForm({
     if (form.durationHours) request.durationHours = Number(form.durationHours);
     if (form.language.trim()) request.language = form.language.trim();
 
+    void search(request);
+  };
+
+  const applyAlternative = (request: MatchRequest) => {
+    setForm({
+      city: request.city, date: request.date, eventFormat: request.eventFormat,
+      category: request.category, budgetKzt: String(request.budgetKzt),
+      durationHours: request.durationHours ? String(request.durationHours) : "",
+      language: request.language ?? "",
+    });
     void search(request);
   };
 
@@ -378,6 +388,7 @@ export default function SearchForm({
           request={lastRequest}
           plan={plan}
           onAdd={addToPlan}
+          onAlternative={applyAlternative}
         />}
       </section>
 
@@ -434,12 +445,13 @@ function LoadingState() {
 }
 
 function SearchResults({
-  response, request, plan, onAdd,
+  response, request, plan, onAdd, onAlternative,
 }: {
   response: MatchResponseWithMode;
   request: MatchRequest | null;
   plan: PlanItem[];
   onAdd: (match: ContractorMatch, request: MatchRequest) => void;
+  onAlternative: (request: MatchRequest) => void;
 }) {
   if (response.outcome === "NO_CATEGORY_IN_CITY") {
     return (
@@ -447,6 +459,7 @@ function SearchResults({
         <p className={styles.statusLabel}>Категория не найдена</p>
         <h2>В этом городе пока нет таких подрядчиков</h2>
         <p>Попробуйте выбрать другой город или категорию.</p>
+        <AlternativeOptions alternatives={response.alternatives ?? []} onChoose={onAlternative} />
       </div>
     );
   }
@@ -470,6 +483,7 @@ function SearchResults({
             ))}
           </ul>
         )}
+        <AlternativeOptions alternatives={response.alternatives ?? []} onChoose={onAlternative} />
       </div>
     );
   }
@@ -519,6 +533,29 @@ function SearchResults({
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+function AlternativeOptions({ alternatives, onChoose }: {
+  alternatives: SearchAlternative[];
+  onChoose: (request: MatchRequest) => void;
+}) {
+  return (
+    <div className={styles.alternatives}>
+      <h3>{alternatives.length ? "Вот что можно изменить" : "Как продолжить поиск"}</h3>
+      {alternatives.length ? (
+        <>
+          <p>Каждый вариант меняет только одно условие. Остальные параметры сохранены. Нажмите, чтобы повторить подбор.</p>
+          {alternatives.map((option) => (
+            <button type="button" key={`${option.kind}-${option.label}`} onClick={() => onChoose(option.request)}>
+              <strong>{option.label} <span aria-hidden="true">→</span></strong>
+              <span>Подойдут: {option.candidateNames.join(", ")}</span>
+            </button>
+          ))}
+          <small>Даты проверены по календарю учебного датасета в пределах следующих 30 дней. Доступность в реальном времени не подтверждается.</small>
+        </>
+      ) : <p>Одного изменения недостаточно. Выберите город и категорию из каталога; проверьте бюджет, формат, язык и длительность. В базе только 66 анкет — это ограничение данных, а не отсутствие подрядчиков на рынке.</p>}
     </div>
   );
 }
