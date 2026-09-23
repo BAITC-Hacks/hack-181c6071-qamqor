@@ -7,7 +7,7 @@
 | CORE-1 | Каркас, CSV loader, matching API | Али | `feat/core` | DONE | `cd577f9` |
 | UI-1 | Форма и карточки | Даурен | `feat/ui` | MERGED | интегрировано в `f52a9f3` |
 | BUG-1 | Бюджет 1 500 000 не проходил HTML step validation | Али | `feat/core` | DONE | `f52a9f3`; другим не исправлять |
-| UI-2 | Проверить телефон, три состояния, подпись «цена от» и сообщение результата | Даурен | `feat/ui` | ACTIVE | только UI-файлы; ключ причины остаётся `format` |
+| UI-2 | Проверить телефон, три состояния, подпись «цена от» и сообщение результата | Даурен | `feat/ui` | MERGED | проверено на `1feac06`; mobile 390×844 PASS; ключ причины `format` сохранён |
 | DATA-1 | Demo fixtures: плотная, редкая, пустая категория и две даты | Димаш | `feat/ai-data` | ACTIVE | `data/fixtures/**`, `tests/**`; engine не менять |
 | DEPLOY-1 | Vercel deployment | Али | `feat/core` | DONE | https://qamqor-hackathon.vercel.app; production API проверен |
 | AI-1 | Опциональная LLM-переформулировка фактов | Димаш | `feat/ai-data` | BLOCKED | только после DATA-1 и отдельного назначения |
