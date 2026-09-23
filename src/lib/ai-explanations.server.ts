@@ -71,7 +71,8 @@ function parsePlans(text: string, matches: ContractorMatch[], request: MatchRequ
 }
 
 async function readResponse(response: Response): Promise<string> {
-  if (!response.ok || !response.body) throw new Error("AI unavailable");
+  if (!response.ok) throw new Error(`AI_HTTP_${response.status}`);
+  if (!response.body) throw new Error("AI_EMPTY_BODY");
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let bytes = 0;
@@ -176,8 +177,13 @@ export async function improveExplanations(
       };
     };
     return await Promise.race([operation(), deadline]);
-  } catch {
-    // Never log provider responses, prompts, exceptions or authorization headers.
+  } catch (error) {
+    // Log only a bounded diagnostic code, never provider bodies, prompts or credentials.
+    const message = error instanceof Error ? error.message : "AI_UNKNOWN";
+    const diagnostic = /^AI_(?:HTTP_\d{3}|EMPTY_BODY|timeout)$/.test(message)
+      ? message
+      : "AI_INVALID_RESPONSE";
+    console.warn(`[ai-explanations] ${diagnostic}`);
     return fallback;
   } finally {
     clearTimeout(timer);
