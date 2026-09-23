@@ -226,6 +226,18 @@
   line-height: 1.5;
 }
 
+.explanationMode {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 22px;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: var(--brand-dark);
+  background: #e7f1ec;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .resultsHeading > span {
   color: var(--muted);
   font-size: 0.78rem;

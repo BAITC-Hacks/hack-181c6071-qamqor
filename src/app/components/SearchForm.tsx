@@ -7,10 +7,14 @@ import ContractorCard from "./ContractorCard";
 import type { MatchRequest, MatchResponse } from "@/lib/types";
 import styles from "./SearchForm.module.css";
 
+type MatchResponseWithMode = MatchResponse & {
+  explanationMode?: "ai" | "fallback";
+};
+
 type SearchState =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "success"; data: MatchResponse }
+  | { status: "success"; data: MatchResponseWithMode }
   | { status: "error"; message: string };
 
 const INITIAL_FORM = {
@@ -55,7 +59,7 @@ export default function SearchForm() {
         throw new Error(`Запрос завершился с кодом ${response.status}`);
       }
 
-      const data = (await response.json()) as MatchResponse;
+      const data = (await response.json()) as MatchResponseWithMode;
       setState({ status: "success", data });
     } catch (error) {
       setState({
@@ -225,7 +229,7 @@ function LoadingState() {
   );
 }
 
-function SearchResults({ response }: { response: MatchResponse }) {
+function SearchResults({ response }: { response: MatchResponseWithMode }) {
   if (response.outcome === "NO_CATEGORY_IN_CITY") {
     return (
       <div className={styles.messageState}>
@@ -271,6 +275,11 @@ function SearchResults({ response }: { response: MatchResponse }) {
         {response.elapsedMs !== undefined && <span>{response.elapsedMs} мс</span>}
       </div>
       <p className={styles.resultsNote}>{response.message}</p>
+      <p className={styles.explanationMode}>
+        {response.explanationMode === "ai"
+          ? "Объяснение подготовлено AI-агентом"
+          : "Использовано базовое объяснение"}
+      </p>
 
       <div className={styles.cards}>
         {matches.map((match) => (
