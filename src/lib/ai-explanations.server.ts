@@ -2,7 +2,8 @@
 import { clearTimeout, setTimeout } from "node:timers";
 import type { ContractorMatch, MatchRequest, MatchResponse } from "./types";
 
-type MatchResult = Omit<MatchResponse, "elapsedMs">;
+type MatchResult = Omit<MatchResponse, "elapsedMs" | "explanationMode">;
+type ExplainedMatchResult = MatchResult & Required<Pick<MatchResponse, "explanationMode">>;
 type Plan = {
   id: string;
   focus: "format" | "language" | "duration";
@@ -89,8 +90,15 @@ async function readResponse(response: Response): Promise<string> {
   }
 }
 
-export async function improveExplanations(result: MatchResult, request: MatchRequest): Promise<MatchResult> {
-  const fallback = result.matches.length <= 3 ? result : { ...result, matches: result.matches.slice(0, 3) };
+export async function improveExplanations(
+  result: MatchResult,
+  request: MatchRequest,
+): Promise<ExplainedMatchResult> {
+  const fallback: ExplainedMatchResult = {
+    ...result,
+    matches: result.matches.slice(0, 3),
+    explanationMode: "fallback",
+  };
   const key = process.env.OPENAI_API_KEY;
   if (!key?.trim() || fallback.outcome !== "MATCHED" || !fallback.matches.length) return fallback;
 
@@ -103,7 +111,7 @@ export async function improveExplanations(result: MatchResult, request: MatchReq
         reject(new Error("AI timeout"));
       }, AI_TIMEOUT_MS);
     });
-    const operation = async () => {
+    const operation = async (): Promise<ExplainedMatchResult> => {
       // Explicit allowlists: no full profiles, descriptions, names, scores, env or extra request keys.
       const input = {
         request: {
@@ -160,6 +168,7 @@ export async function improveExplanations(result: MatchResult, request: MatchReq
       const plans = parsePlans(content.text, fallback.matches, request);
       return {
         ...fallback,
+        explanationMode: "ai" as const,
         matches: fallback.matches.map((match) => ({
           ...match,
           explanation: render(plans.find(({ id }) => id === match.contractor.id)!, match, request),

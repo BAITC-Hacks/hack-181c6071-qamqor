@@ -11,6 +11,7 @@ const scenarios = JSON.parse(await readFile(
 ));
 const request = scenarios.dense.request;
 const baseline = matchContractors(contractors, request);
+const fallback = (result) => ({ ...result, matches: result.matches.slice(0, 3), explanationMode: "fallback" });
 const plans = () => baseline.matches.map(({ contractor }) => ({
   id: contractor.id, focus: "format", wording: "fit", budget: "remaining",
 }));
@@ -34,14 +35,14 @@ function setup(t, implementation) {
 test("no key, blank key, and empty results never call the provider", async (t) => {
   const fetch = setup(t, () => { throw new Error("Unexpected fetch"); });
   delete process.env.OPENAI_API_KEY;
-  assert.strictEqual(await improveExplanations(baseline, request), baseline);
+  assert.deepEqual(await improveExplanations(baseline, request), fallback(baseline));
   process.env.OPENAI_API_KEY = "  ";
-  assert.strictEqual(await improveExplanations(baseline, request), baseline);
+  assert.deepEqual(await improveExplanations(baseline, request), fallback(baseline));
   process.env.OPENAI_API_KEY = "unit-test-placeholder";
   const empty = matchContractors(contractors, scenarios.empty.request);
-  assert.strictEqual(await improveExplanations(empty, scenarios.empty.request), empty);
+  assert.deepEqual(await improveExplanations(empty, scenarios.empty.request), fallback(empty));
   const absent = matchContractors(contractors, { ...request, category: "not-in-dataset" });
-  assert.strictEqual(await improveExplanations(absent, request), absent);
+  assert.deepEqual(await improveExplanations(absent, request), fallback(absent));
   assert.equal(fetch.mock.callCount(), 0);
 });
 
@@ -68,10 +69,11 @@ test("valid AI plan changes only explanations, even when provider reverses IDs",
   });
   const result = await improveExplanations(baseline, { ...request, extra: "must-not-be-sent" });
   assert.equal(fetch.mock.callCount(), 1);
+  assert.equal(result.explanationMode, "ai");
   assert.deepEqual(baseline, original);
   assert.deepEqual({ ...result, matches: result.matches.map((match, i) => ({
     ...match, explanation: baseline.matches[i].explanation,
-  })) }, baseline);
+  })) }, { ...baseline, explanationMode: "ai" });
   for (const match of result.matches) {
     assert.ok(match.explanation.startsWith("Подходит для формата"));
     assert.ok(match.explanation.includes(match.contractor.priceFromKzt.toLocaleString("ru-RU")));
@@ -105,7 +107,7 @@ for (const [name, mutate] of [
 ]) {
   test(`invalid plan (${name}) preserves all deterministic explanations`, async (t) => {
     setup(t, async () => Response.json(envelope(mutate(plans()))));
-    assert.strictEqual(await improveExplanations(baseline, request), baseline);
+    assert.deepEqual(await improveExplanations(baseline, request), fallback(baseline));
   });
 }
 
@@ -124,13 +126,13 @@ for (const [name, response] of [
 ]) {
   test(`${name} falls back without leaking provider output`, async (t) => {
     setup(t, async () => response());
-    assert.strictEqual(await improveExplanations(baseline, request), baseline);
+    assert.deepEqual(await improveExplanations(baseline, request), fallback(baseline));
   });
 }
 
 test("network failure falls back without retrying", async (t) => {
   const fetch = setup(t, async () => { throw new Error("Private provider error"); });
-  assert.strictEqual(await improveExplanations(baseline, request), baseline);
+  assert.deepEqual(await improveExplanations(baseline, request), fallback(baseline));
   assert.equal(fetch.mock.callCount(), 1);
 });
 
@@ -142,7 +144,7 @@ for (const stalledBody of [false, true]) {
       return stalledBody ? new Response(new ReadableStream()) : new Promise(() => {});
     });
     const start = performance.now();
-    assert.strictEqual(await improveExplanations(baseline, request), baseline);
+    assert.deepEqual(await improveExplanations(baseline, request), fallback(baseline));
     const elapsed = performance.now() - start;
     assert.ok(elapsed >= AI_TIMEOUT_MS - 50 && elapsed < AI_TIMEOUT_MS + 1500, `${elapsed} ms`);
     assert.equal(signal.aborted, true);

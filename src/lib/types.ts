@@ -47,5 +47,6 @@ export type MatchResponse = {
   rejectionSummary: Record<string, number>;
   message: string;
   algorithmVersion: "v1";
+  explanationMode?: "ai" | "fallback";
   elapsedMs: number;
 };

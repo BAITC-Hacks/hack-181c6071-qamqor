@@ -4,6 +4,8 @@
 Отбор, ID, порядок, score, facts, message и rejectionSummary модель не меняет.
 Максимум три результата. Ключ берётся только из `process.env.OPENAI_API_KEY`;
 модуль импортируется серверным route и использует Node-only API.
+Ответ API всегда содержит `explanationMode`: `ai` после принятого ответа модели,
+`fallback` при любом fallback, включая отсутствие ключа и пустую выдачу.
 
 Один POST в OpenAI Responses API, модель `gpt-4o-mini`, `store: false`, без retry.
 Передаются только явно перечисленные поля запроса и факты выбранных кандидатов
