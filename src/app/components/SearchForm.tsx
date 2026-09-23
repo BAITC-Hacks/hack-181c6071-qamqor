@@ -35,6 +35,16 @@ const REJECTION_LABELS: Record<string, string> = {
   duration: "не подходят по длительности",
 };
 
+const CITIES = ["Алматы", "Астана", "Зарубежье"];
+const EVENT_FORMATS = ["день рождения", "конференция", "корпоратив", "свадьба", "той", "юбилей"];
+const CATEGORIES = [
+  "Банкетный зал", "Ведущий", "Ведущий церемонии", "Видеограф", "Декоратор",
+  "Загородная площадка", "Инструменталист", "Лайв-бэнд", "Национальный ансамбль",
+  "Отель", "Подарки и сувениры", "Ресторан", "Танцевальный коллектив", "Флорист",
+  "Фото и видеобудки", "Фотограф", "Шоу-программа",
+];
+const LANGUAGES = ["английский", "казахский", "русский"];
+
 export default function SearchForm() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [state, setState] = useState<SearchState>({ status: "idle" });
@@ -106,6 +116,7 @@ export default function SearchForm() {
             Город
             <input
               autoComplete="address-level2"
+              list="city-options"
               onChange={(event) => setField("city", event.target.value)}
               placeholder="Например, Астана"
               required
@@ -127,6 +138,7 @@ export default function SearchForm() {
           <label>
             Тип мероприятия
             <input
+              list="format-options"
               onChange={(event) => setField("eventFormat", event.target.value)}
               placeholder="Например, корпоратив"
               required
@@ -137,6 +149,7 @@ export default function SearchForm() {
           <label>
             Категория подрядчика
             <input
+              list="category-options"
               onChange={(event) => setField("category", event.target.value)}
               placeholder="Например, Ведущий"
               required
@@ -173,11 +186,17 @@ export default function SearchForm() {
           <label className={styles.fullWidth}>
             Язык <span>необязательно</span>
             <input
+              list="language-options"
               onChange={(event) => setField("language", event.target.value)}
               placeholder="Например, русский"
               value={form.language}
             />
           </label>
+
+          <datalist id="city-options">{CITIES.map((value) => <option key={value} value={value} />)}</datalist>
+          <datalist id="format-options">{EVENT_FORMATS.map((value) => <option key={value} value={value} />)}</datalist>
+          <datalist id="category-options">{CATEGORIES.map((value) => <option key={value} value={value} />)}</datalist>
+          <datalist id="language-options">{LANGUAGES.map((value) => <option key={value} value={value} />)}</datalist>
         </div>
 
         <button className={styles.submit} disabled={state.status === "loading"}>
@@ -264,6 +283,9 @@ function SearchResults({ response }: { response: MatchResponseWithMode }) {
   }
 
   const matches = response.matches.slice(0, 3);
+  const rejected = Object.entries(response.rejectionSummary ?? {}).filter(
+    ([, count]) => count > 0,
+  );
 
   return (
     <div>
@@ -280,6 +302,19 @@ function SearchResults({ response }: { response: MatchResponseWithMode }) {
           ? "Объяснение подготовлено AI-агентом"
           : "Использовано базовое объяснение"}
       </p>
+
+      {matches.length < 3 && rejected.length > 0 && (
+        <div className={styles.filterSummary}>
+          <strong>Почему вариантов меньше трёх</strong>
+          <ul className={styles.reasons}>
+            {rejected.map(([reason, count]) => (
+              <li key={reason}>
+                <strong>{count}</strong> {REJECTION_LABELS[reason] ?? reason}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className={styles.cards}>
         {matches.map((match) => (

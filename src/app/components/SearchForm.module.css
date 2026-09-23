@@ -238,6 +238,23 @@
   font-weight: 700;
 }
 
+.filterSummary {
+  margin: 0 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #fbfcfb;
+}
+
+.filterSummary > strong {
+  font-size: 0.86rem;
+}
+
+.filterSummary .reasons {
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
 .resultsHeading > span {
   color: var(--muted);
   font-size: 0.78rem;
