@@ -10,9 +10,11 @@
 | UI-2 | Проверить телефон, три состояния, подпись «цена от» и сообщение результата | Даурен | `feat/ui` | MERGED | проверено на `1feac06`; mobile 390×844 PASS; ключ причины `format` сохранён |
 | DATA-1 | Demo fixtures: плотная, редкая, пустая категория и две даты | Димаш | `feat/ai-data` | MERGED | `247b5e1`; 6/6 тестов PASS на объединённом `main` |
 | DEPLOY-1 | Vercel deployment | Али | `feat/core` | DONE | https://qamqor-hackathon.vercel.app; production API проверен |
-| AI-1 | LLM-агент объясняет результаты matcher с безопасным fallback | Димаш | `feat/ai-data` | MERGED | `c28845e`; check/build и 28/28 тестов PASS; production smoke ожидается |
+| AI-1 | LLM-агент объясняет результаты matcher с безопасным fallback | Димаш | `feat/ai-data` | DONE | production `ai` PASS: 3 результата, стабильный порядок, 3443 мс |
 | UI-AI-1 | Показать режим AI/fallback в результатах | Даурен | `feat/ui` | MERGED | `cae823e`; check/build/mobile 390×844 PASS; AI e2e после AI-1 |
-| README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | TODO | продолжить после production smoke AI-1 |
+| README-1 | Финальный воспроизводимый README | Димаш | `feat/ai-data` | ACTIVE | архитектура, AI/fallback, тесты, demo requests, production URL |
+| PROD-QA-1 | Проверить production по четырём обязательным сценариям и mobile | Даурен | `feat/ui` | ACTIVE | только отчёт; код не менять |
+| SUBMIT-1 | Проверить чистоту репо, секреты, ссылку и требования отправки | Али | `main` | ACTIVE | после README-1 и PROD-QA-1 |
 
 Статусы: `TODO`, `ACTIVE`, `REVIEW`, `DONE`, `MERGED`, `BLOCKED`.
 
